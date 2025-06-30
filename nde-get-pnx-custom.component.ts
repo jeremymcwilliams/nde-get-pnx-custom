@@ -1,46 +1,38 @@
 import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule, NgIf } from '@angular/common'; 
 import { Store } from '@ngrx/store';
-import { createFeatureSelector, createSelector } from '@ngrx/store';
+import { createFeatureSelector } from '@ngrx/store';
 
-
-
-//const selectPnxFeature = createFeatureSelector<any>('Search');
-//const selectPnxData = createSelector(selectPnxFeature, state => state.pnx);
-
+// Selector
 export const selectSearchState = createFeatureSelector<any>('Search');
 
 @Component({
   selector: 'custom-nde-get-pnx-custom',
   standalone: true,
-  imports: [],
+  imports: [NgIf], // required here if used in the html template
   templateUrl: './nde-get-pnx-custom.component.html',
   styleUrl: './nde-get-pnx-custom.component.scss'
 })
-export class NdeGetPnxCustomComponent {
-  //searchState = this.store.selectSignal(selectSearchState);
-  //console.log(searchState());
+export class NdeGetPnxCustomComponent implements OnInit {
   private store = inject(Store);
-  // signal from store selector
   searchState = this.store.selectSignal(selectSearchState);
   
-  //console.log(this.searchState);
-    ngOnInit(): void {
+  // must declare the properties with its type and an initial value
+  show: boolean = false; 
+  mmsId: string | null = null; //can be string or null, and initial val is null
 
-    const state = this.searchState(); // <-- call the signal like a function
-    console.log('Search state:', state);
+  ngOnInit(): void {
+    let pathname = window.location.pathname;
+    this.show=false;
+    if (pathname == "/nde/fulldisplay") {
+      this.show = true;
+    }
 
+    const state = this.searchState();
     const ids = Object.keys(state.entities || {});
     if (ids.length > 0) {
       const firstPnx = state.entities[ids[0]].pnx;
-      console.log('PNX metadata:', firstPnx);
-
-      let mmsId=firstPnx.control.sourcerecordid[0];
-      console.log(mmsId);
-      return mmsId;
+      this.mmsId = firstPnx.control?.sourcerecordid?.[0] ?? null;
     }
-
-
-
   }
-
 }
